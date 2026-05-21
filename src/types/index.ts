@@ -5,3 +5,11 @@ export interface IUser {
 
     role?:string
 }
+
+export interface IIssue {
+    title:string,
+    description:string,
+    status?:string,
+    priority?:string,
+    assigned_to?:number
+}

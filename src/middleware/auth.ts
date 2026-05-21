@@ -18,6 +18,7 @@ const user = matchingUser.rows[0];
 if(matchingUser.rows.length === 0){
     return res.status(401).json({success:false, message: "User not foundbbbb" });
 }
+req.user = decodedToken;
             next()
         }catch(error){
             res.status(401).json({success:false, message:"Unauthorized access"})

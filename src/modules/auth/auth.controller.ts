@@ -26,6 +26,8 @@ const login = async(req:Request,res:Response)=>{
 }
 
 const allUsers = async(req:Request,res:Response)=>{
+
+    console.log("Request user:", req.user);
     try {
         const result = await authService.getAllUsers();
         res.status(200).json({success:true,message:"User retrieved successfully", users: result.rows });

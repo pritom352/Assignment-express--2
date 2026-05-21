@@ -23,12 +23,14 @@ export const initDB= async()=>{
     await pool.query(`
         CREATE TABLE IF NOT EXISTS issues(
         id SERIAL PRIMARY KEY,
+        title VARCHAR(150) NOT NULL,
         description TEXT NOT NULL CHECK (LENGTH(description) >= 20),
+        type VARCHAR(10) NOT NULL,
         status VARCHAR(20) NOT NULL DEFAULT 'open',
         reporter_id INTEGER ,
         created_at TIMESTAMPTZ DEFAULT NOW(),
-        updated_at TIMESTAMPTZ DEFAULT NOW(),
-        FOREIGN KEY (reporter_id) REFERENCES users(id) ON DELETE SET NULL
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+       
         );
         `)
     }catch(error){
