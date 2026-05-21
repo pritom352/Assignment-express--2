@@ -37,8 +37,13 @@ const jwtPayload = {
 const accessToken = jwt.sign(jwtPayload,jwtCode,{expiresIn:"10d"})
 return {accessToken , user}
 }
+
+const getAllUsers = async()=>{
+    const result = await pool.query(`SELECT * FROM users`)
+    return result
+}
 export const authService ={
     createUser,
     loginUser,
-    jwtCode
+    jwtCode,getAllUsers
 }
