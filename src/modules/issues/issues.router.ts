@@ -9,5 +9,5 @@ router.get("/",issueController.getAllIssues)
 router.get("/:id",issueController.getIssueById)
 
 router.put("/:id",auth(),issueController.updateIssue)
-
+router.delete("/:id",auth(),issueController.deleteIssue)
 export const issueRouter= router

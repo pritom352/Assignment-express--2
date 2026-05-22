@@ -192,9 +192,33 @@ values.push(id);
     }
 };
 
+const deleteIssue = async (req:Request) => {
+    try {
+        const { id } = req.params;
+        const userRole= req.user?.role;
+        if(userRole !== "maintainer"){
+            throw new Error("Only maintainers can delete issues");
+        }
+        const deleteIssue = await pool.query(`DELETE FROM issues WHERE id = $1 RETURNING *`, [id]);
+        
+
+        if(deleteIssue.rows.length === 0){
+            throw new Error("Issue not found");
+        }
+        return deleteIssue.rows[0];
+    
+    } catch (error) {
+       
+        throw error;
+    }
+};
+
 export const issueService = {
     createIssue,
     getAllIssues,
     getIssueById,
+   
+    deleteIssue,
+
     updateIssue
 }
