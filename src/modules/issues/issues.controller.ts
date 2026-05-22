@@ -9,7 +9,30 @@ const createIssue=async(req:Request,res:Response)=>{
         console.error("Error during issue creation:", error);
         res.status(500).json({success:false, message: error.message });
     }   }
+// const getAllIssues = async(req:Request,res:Response)=>{
+//     try {
+//         const result = await issueService.getAllIssues(req);
+//         res.status(200).json({success:true, message: "Issues retrieved successfully", issues: result.rows });
+//     }catch (error:any) {
+//         console.error("Error during retrieving issues:", error);
+//         res.status(500).json({success:false, message: error.message });
+//     }   }
 
+
+const getAllIssues = async (req: Request, res: Response) => {
+    try {
+        const result = await issueService.getAllIssues(req);
+        res.status(200).json({
+            success: true,
+            message: "Issues retrieved successfully",
+            data: result   // 'issues' না দিয়ে 'data'
+        });
+    } catch (error: any) {
+        console.error("Error during retrieving issues:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
 export const issueController={
-    createIssue
+    createIssue,
+    getAllIssues
 }
