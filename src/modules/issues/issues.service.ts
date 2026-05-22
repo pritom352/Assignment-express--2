@@ -99,7 +99,22 @@ export const getAllIssues = async (req: Request) => {
     return  issuesWithReporter ; 
 };
 
+
+// get id wise issue details
+const getIssueById = async (req: Request) => {
+    const { id } = req.params;
+    const issueRes = await pool.query(
+        `SELECT * FROM issues WHERE id = $1`,
+        [id]
+    );
+    if (!issueRes.rows[0]) {
+        throw new Error("Issue not found");
+    }
+    return issueRes.rows[0];
+};
+
 export const issueService = {
     createIssue,
-    getAllIssues
-    }
+    getAllIssues,
+    getIssueById
+}
