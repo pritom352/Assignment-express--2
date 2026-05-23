@@ -5,10 +5,13 @@ const createIssue=async(req:Request,res:Response)=>{
         const result = await issueService.createIssue( req.body,
    req.user);
         res.status(201).json({success:true, message: "Issue created successfully", issue: result.rows[0] });
-    }catch (error:any) {
-        console.error("Error during issue creation:", error);
-        res.status(500).json({success:false, message: error.message });
-    }   }
+    }catch(error:any){
+
+    res.status(error.statusCode || 500).json({
+        success:false,
+        message:error.message
+    })
+}   }
 
 
 const getAllIssues = async (req: Request, res: Response) => {
@@ -17,12 +20,15 @@ const getAllIssues = async (req: Request, res: Response) => {
         res.status(200).json({
             success: true,
             message: "Issues retrieved successfully",
-            data: result   // 'issues' না দিয়ে 'data'
+            data: result   
         });
-    } catch (error: any) {
-        console.error("Error during retrieving issues:", error);
-        res.status(500).json({ success: false, message: error.message });
-    }
+    } catch(error:any){
+
+    res.status(error.statusCode || 500).json({
+        success:false,
+        message:error.message
+    })
+}
 };
 
 
@@ -34,24 +40,32 @@ const getIssueById = async (req: Request, res: Response) => {
             message: "Issue retrieved successfully",
             data: result
         });
-    } catch (error: any) {
-        res.status(500).json({ success: false, message: error.message });
-    }
+    } catch(error:any){
+
+    res.status(error.statusCode || 500).json({
+        success:false,
+        message:error.message
+    })
+}
 };
 
 // update issue
 const updateIssue = async (req: Request, res: Response) => {
     try {
-        // const { id } = req.params;
+       
         const result = await issueService.updateIssue(req);
         res.status(200).json({
             success: true,
             message: "Issue updated successfully",
             data: result
         });
-    } catch (error: any) {
-        res.status(500).json({ success: false, message: error.message });
-    }
+    } catch(error:any){
+
+    res.status(error.statusCode || 500).json({
+        success:false,
+        message:error.message
+    })
+}
 };
 
 const deleteIssue = async (req: Request, res: Response) => {
@@ -64,9 +78,13 @@ const deleteIssue = async (req: Request, res: Response) => {
             
         });
        }
-    } catch (error: any) {
-        res.status(500).json({ success: false, message: error.message });
-    }
+    } catch(error:any){
+
+    res.status(error.statusCode || 500).json({
+        success:false,
+        message:error.message
+    })
+}
 };
 
 export const issueController={

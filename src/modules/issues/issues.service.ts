@@ -1,6 +1,7 @@
 import type { Request } from "express";
 import { pool } from "../../db";
 import type { JwtPayload } from "jsonwebtoken";
+import AppError from "../../utils/error";
 
 const createIssue = async (issueData:any, user:any) => {
     
@@ -11,27 +12,27 @@ const createIssue = async (issueData:any, user:any) => {
          console.log("Reporter ID:", reporter_id);
 
         if(!title){
-             throw new Error("Title is required")
+             throw new AppError(400, "Title is required")
         }
         if(title.length > 150){
-            throw new Error("Title should not exceed 150 characters")
+            throw new AppError(400, "Title should not exceed 150 characters")
         }
         if(!description){
-            throw new Error("Description is required")
+            throw new AppError(400, "Description is required")
         }   
         if(description.length < 20){
-            throw new Error("Description should be at least 20 characters long")
+            throw new AppError(400, "Description should be at least 20 characters long")
         }
 
         if(!type){
-            throw new Error("Type is required")
+            throw new AppError(400, "Type is required")
         }   
-        if(type !== "bug" && type !== "feature"){
-                throw new Error("Type should be either 'bug' or 'feature'")
+        if(type !== "bug" && type !== "feature_request"){
+                throw new AppError(400, "Type should be either 'bug' or 'feature_request'")
         }
         // console.log("Reporter ID:", reporter_id);
         if(!reporter_id){
-            throw new Error("only authenticated users can create issues")
+            throw new AppError(400, "only authenticated users can create issues")
         }
          const reporterCheck = await pool.query(`SELECT * FROM users WHERE id = $1`, [reporter_id]);
             if(!reporterCheck.rows[0]){
@@ -58,7 +59,7 @@ export const getAllIssues = async (req: Request) => {
     const conditions = [];
     const values = [];
 
-    if (type === 'bug' || type === 'feature') {
+    if (type === 'bug' || type === 'feature_request') {
         conditions.push(`type = $${values.length + 1}`);
         values.push(type);
     }
@@ -109,7 +110,7 @@ const getIssueById = async (req: Request) => {
         [id]
     );
     if (!issueRes.rows[0]) {
-        throw new Error("Issue not found");
+        throw new AppError(404, "Issue not found");
     }
 
     const userRes = await pool.query(
@@ -129,23 +130,24 @@ const updateIssue = async (req:Request) => {
         const { title, description, type, status } = req.body;
         const user = req.user;
         if (!user || !user.id) {
-            throw new Error("Authentication required");
+            throw new AppError(401, "Authentication required");
         }
         const findIssue = await pool.query(`SELECT * FROM issues WHERE id = $1`, [id]);
         if(findIssue.rows.length === 0)
 {
-    throw new Error("Issue not found");
+    throw new AppError(404, "Issue not found");
 }
 const issue = findIssue.rows[0];
-// if(issue.reporter_id !== user.id){
-//     throw new Error("You are not authorized to update this issue");
-// }
+
 
 const isMaintainer = user.role === 'maintainer';
 const isContributionOpen= user.role==="contributor" && issue.status === "open"
 if (!isMaintainer && !isContributionOpen) {
-    throw new Error("You are not authorized to update this issue");
+    throw new AppError(403, "You are not authorized to update this issue");
 }   
+if(issue.reporter_id !== user.id && !isMaintainer){
+    throw new AppError(403, "You can only update issues you reported")
+}
 let updateSql=`UPDATE issues SET `;
 const updateValues:any[]=[];
 const values:any[]=[];
@@ -158,24 +160,24 @@ if(description !== undefined){
     values.push(description);
 }
 if(type !== undefined){
-    if(type !== "bug" && type !== "feature"){
-        throw new Error("Type should be either 'bug' or 'feature'")
+    if(type !== "bug" && type !== "feature_request"){
+        throw new AppError(400, "Type should be either 'bug' or 'feature_request'")
 }
     updateValues.push(`type =$${values.length + 1}`);
     values.push(type);
 }   
 if(status !== undefined && isMaintainer){
     if(!["open","in_progress","resolved"].includes(status)){
-        throw new Error("Status should be either 'open', 'in_progress' or 'resolved'")
+        throw new AppError(400, "Status should be either 'open', 'in_progress' or 'resolved'")
 }
     updateValues.push(`status =$${values.length + 1}`);
     values.push(status);
 
 }else if(status !==undefined && !isMaintainer){
-    throw new Error("Only maintainers can update the status")
+    throw new AppError(403, "Only maintainers can update the status")
 }
 if(updateValues.length === 0){
-    throw new Error("At least one field (title, description, type, status) must be provided for update");
+    throw new AppError(400, "At least one field (title, description, type, status) must be provided for update");
 }
 updateValues.push(`updated_at = NOW()`);
 values.push(id);
@@ -197,13 +199,13 @@ const deleteIssue = async (req:Request) => {
         const { id } = req.params;
         const userRole= req.user?.role;
         if(userRole !== "maintainer"){
-            throw new Error("Only maintainers can delete issues");
+            throw new AppError(403, "Only maintainers can delete issues");
         }
         const deleteIssue = await pool.query(`DELETE FROM issues WHERE id = $1 RETURNING *`, [id]);
         
 
         if(deleteIssue.rows.length === 0){
-            throw new Error("Issue not found");
+            throw new AppError(404, "Issue not found");
         }
         return deleteIssue.rows[0];
     

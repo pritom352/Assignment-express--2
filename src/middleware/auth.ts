@@ -14,7 +14,6 @@ const auth=()=>{
             console.log("Decoded token:", decodedToken);// Log the decoded token for debugging
             const matchingUser = await pool.query(`SELECT * FROM users WHERE id = $1 AND name = $2`, [decodedToken.id, decodedToken.name]
             );
-const user = matchingUser.rows[0];
 if(matchingUser.rows.length === 0){
     return res.status(401).json({success:false, message: "User not foundbbbb" });
 }

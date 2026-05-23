@@ -1,7 +1,8 @@
 import { Pool } from "pg";
+import config from "../config";
 export const pool= new Pool(
     {
-        connectionString: "postgresql://neondb_owner:npg_N5kbfAiBYom2@ep-square-feather-aot20ss7-pooler.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+        connectionString: config.connectionString,
     }
 )
 
@@ -25,8 +26,11 @@ export const initDB= async()=>{
         id SERIAL PRIMARY KEY,
         title VARCHAR(150) NOT NULL,
         description TEXT NOT NULL CHECK (LENGTH(description) >= 20),
-        type VARCHAR(10) NOT NULL,
-        status VARCHAR(20) NOT NULL DEFAULT 'open',
+        type VARCHAR(20) NOT NULL,
+        status VARCHAR(20)
+NOT NULL
+DEFAULT 'open'
+CHECK (status IN ('open', 'in_progress', 'resolved')),
         reporter_id INTEGER ,
         created_at TIMESTAMPTZ DEFAULT NOW(),
         updated_at TIMESTAMPTZ DEFAULT NOW()
